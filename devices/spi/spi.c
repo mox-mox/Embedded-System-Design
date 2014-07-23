@@ -2,16 +2,6 @@
 #include <board.h>
 
 //{{{
-//{{{
-// SPI-adress-to-Slave translation
-#define SELECT_LDAC              0
-#define SELECT_SPI_MP3_CTRL      1
-#define SELECT_SPI_MP3_DATA      6
-#define SELECT_SPI_MP3_MMC      11
-#define SELECT_SPI_FLASH_RAM    12
-//#define SELECT_SPI_WLAN         13
-#define SELECT_SPI_DAC          14
-//}}}
 
 //{{{
 // Selection of SPI control register

@@ -86,6 +86,7 @@ SRC += common/syscalls.c
 SRC += common/board.c
 SRC += dbgu.c
 SRC += devices/spi/spi.c
+SRC += devices/spi/mp3.c
 #SRC += sdram.c
 
 

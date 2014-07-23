@@ -8,6 +8,7 @@
  * This is the driver for the spi interface of the SAM9XE512 microcontroller.
  * This file was written by mox for the lecture "Embedded System Design" in SS2014 at Heidelberg University
  *
+ * {{{
  * Setting:
  * Using SPI1
  * SPI-Master
@@ -21,9 +22,23 @@
  * PB3/SPI1_NPCS0/TIOA5
  * PC13/D18/SPI1_NPCS1
  * PC20/D20/SPI1_NPCS3
- *
+ * }}}
  */
 
+//{{{
+// SPI-adress-to-Slave translation
+
+#define SPI_LDAC          0
+#define SPI_MP3_CTRL      1
+#define SPI_MP3_DATA      6
+#define SPI_MP3_MMC      11
+#define SPI_FLASH_RAM    12
+#define SPI_WLAN         13
+#define SPI_DAC          14
+
+//}}}
+
+//{{{
 /* Adress decoding table:
  * //NPCS2 is unused
  * NPCS3	NPCS1	NPCS0
@@ -37,21 +52,18 @@
  * 1		1		1       	Select_SPI_MP3_MMC
  */
 
-
-
-
-
-
-
-
-
+//}}}
 
 // Configure the SPI port. Call this function before using the SPI port the first time!
 void spi_init();
 
+#define LAST_TRANSFER 1
+#define NOT_LAST_TRANSFER 0
+#define VOID_DATA 0 // Data to transmit, when when only receiving is required
+
 // Send 8..16 bit of data trough the SPI port.
 // Always check that the SPI port is ready to send before sending, or data loss may occur!
-inline void spi_put(uint32_t data, uint8_t slave_number, uint8_t is_last_transfer);
+inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer);
 
 // This function will return the data, that was received by the last transfer
 // Args:   uint16_t* destination. This is where the received data will be saved to
@@ -77,7 +89,7 @@ inline uint8_t spi_transmit_buffer_is_empty();
 // Send 8..16 bit of data trough the SPI port.
 // Always check that the SPI port is ready to send before sending, or data loss may occur!
 // The data length is 8..16 bits, but the variable "data" is 32 bit to avoid a cast (and because it would need to be at least 16 bit anyways...)
-inline void spi_put(uint32_t data, uint8_t slave_number, uint8_t is_last_transfer)
+inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer)
 {
 	// data                : 00000000 00000000 XXXXXXXX YYYYYYYY
 	// slave_number<<16    : 00000000 0000XXXX 00000000 00000000

@@ -1,6 +1,8 @@
 #ifndef MP3_H_
 #define MP3_H_
 
+#include <stdint.h>
+
 /*
  * This is the driver for the VS1053 MP3 Decoder
  */
@@ -10,30 +12,33 @@
 
 
 
+#define MP3_DREQ AT91C_PIO_PB9
+
+// VS1053 Instructions
+#define VS1053_READ  0x3 // Read data
+#define VS1053_WRITE 0x2 // Write data
 
 
-
-
-
+//{{{
 //     VS1053 register mapping:
 //                         SCI registers, prefix SCI
-//      Abbrev[bits]  Reg     Type Reset    Time1      Description
-#define MODE          0x0  // rw  0x4800     80 CLKI  Mode control
-#define STATUS        0x1  // rw  0x000C     80 CLKI  Status of VS1053
-#define BASS          0x2  // rw  0          80 CLKI  Built-in bass/treble control
-#define CLOCKF        0x3  // rw  0        1200 CLKI  Clock freq + multiplier
-#define DECODE_TIME   0x4  // rw  0         100 CLKI  Decode time in seconds
-#define AUDATA        0x5  // rw  0         450 CLKI  Misc. audio data
-#define WRAM          0x6  // rw  0         100 CLKI  RAM write/read
-#define WRAMADDR      0x7  // rw  0         100 CLKI  Base address for RAM write/read
-#define HDAT0         0x8  // r   0          80 CLKI  Stream header data 0
-#define HDAT1         0x9  // r   0          80 CLKI  Stream header data 1
-#define AIADDR        0xA  // rw  0         210 CLKI  Start address of application
-#define VOL           0xB  // rw  0          80 CLKI  Volume control
-#define AICTRL0       0xC  // rw  0          80 CLKI  Application control register 0
-#define AICTRL1       0xD  // rw  0          80 CLKI  Application control register 1
-#define AICTRL2       0xE  // rw  0          80 CLKI  Application control register 2
-#define AICTRL3       0xF  // rw  0          80 CLKI  Application control register 3
+//      Abbrev[bits]         Reg    Type Reset    Time1      Description
+#define VS1053_MODE          0x0  // rw  0x4800     80 CLKI  Mode control
+#define VS1053_STATUS        0x1  // rw  0x000C     80 CLKI  Status of VS1053
+#define VS1053_BASS          0x2  // rw  0          80 CLKI  Built-in bass/treble control
+#define VS1053_CLOCKF        0x3  // rw  0        1200 CLKI  Clock freq + multiplier
+#define VS1053_DECODE_TIME   0x4  // rw  0         100 CLKI  Decode time in seconds
+#define VS1053_AUDATA        0x5  // rw  0         450 CLKI  Misc. audio data
+#define VS1053_WRAM          0x6  // rw  0         100 CLKI  RAM write/read
+#define VS1053_WRAMADDR      0x7  // rw  0         100 CLKI  Base address for RAM write/read
+#define VS1053_HDAT0         0x8  // r   0          80 CLKI  Stream header data 0
+#define VS1053_HDAT1         0x9  // r   0          80 CLKI  Stream header data 1
+#define VS1053_AIADDR        0xA  // rw  0         210 CLKI  Start address of application
+#define VS1053_VOL           0xB  // rw  0          80 CLKI  Volume control
+#define VS1053_AICTRL0       0xC  // rw  0          80 CLKI  Application control register 0
+#define VS1053_AICTRL1       0xD  // rw  0          80 CLKI  Application control register 1
+#define VS1053_AICTRL2       0xE  // rw  0          80 CLKI  Application control register 2
+#define VS1053_AICTRL3       0xF  // rw  0          80 CLKI  Application control register 3
 
 
 //SCI_MODE (RW) mapping:
@@ -89,15 +94,15 @@
 #define SS_REFERENCE_SEL         0//        0       Reference voltage selection, '0' = 1.23V, '1'=1.65V
 
 // SCI BASS (RW) mapping:
-#define ST AMPLITUDE             12//       15:12   Treble Control in 1.5 dB steps (-8..7, 0 = off)
-#define ST FREQLIMIT             8//        11:8    Lower limit frequency in 1000 Hz steps (1..15)
-#define SB AMPLITUDE             4//        7:4     Bass Enhancement in 1 dB steps (0..15, 0 = off)
-#define SB FREQLIMIT             0//        3:0     Lower limit frequency in 10 Hz steps (2..15)
+#define ST_AMPLITUDE             12//       15:12   Treble Control in 1.5 dB steps (-8..7, 0 = off)
+#define ST_FREQLIMIT             8//        11:8    Lower limit frequency in 1000 Hz steps (1..15)
+#define SB_AMPLITUDE             4//        7:4     Bass Enhancement in 1 dB steps (0..15, 0 = off)
+#define SB_FREQLIMIT             0//        3:0     Lower limit frequency in 10 Hz steps (2..15)
 
 // SCI CLOCKF (RW) mapping:
-#define SC MULT                  13//       15:13   Clock multiplier
-#define SC ADD                   11//       12:11   Allowed multiplier addition
-#define SC FREQ                   0//       10: 0   Clock frequency
+#define SC_MULT                  13//       15:13   Clock multiplier
+#define SC_ADD                   11//       12:11   Allowed multiplier addition
+#define SC_FREQ                   0//       10: 0   Clock frequency
 
 // Possible values for SC_MULT:
 //                                   MASK      SC MULT       CLKI
@@ -167,6 +172,16 @@
 //                                1          50/15 microsec
 //                                0          none
 
+//}}}
+
+
+
+void mp3_init();
+
+
+
+uint8_t mp3_read(uint8_t adress, uint16_t* data);
+void mp3_write(uint8_t adress, uint16_t data);
 
 
 
@@ -175,12 +190,7 @@
 
 
 
-
-
-
-
-
-
+;
 
 
 
