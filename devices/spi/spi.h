@@ -1,5 +1,7 @@
 #ifndef SPI_H_
 #define SPI_H_
+#include <stdint.h>
+#include <AT91SAM9XE512.h>
 
 /*
  *
@@ -36,66 +38,99 @@
  */
 
 
-/*
-Registers
-
-Offset	Register 								Name		Access		Reset
-0x00	Control Register						SPI_CR		Write-only	---
-0x04	Mode Register							SPI_MR		Read-write	0x0
-0x08	Receive Data Register					SPI_RDR		Read-only	0x0
-0x0C	Transmit Data Register					SPI_TDR		Write-only	---
-0x10	Status Register							SPI_SR		Read-only	0x000000F0
-0x14	Interrupt Enable Register				SPI_IER		Write-only	---
-0x18	Interrupt Disable Register				SPI_IDR		Write-only	---
-0x1C	Interrupt Mask Register					SPI_IMR		Read-only	0x0
-0x30	Chip Select Register 0					SPI_CSR0	Read-write	0x0
-0x34	Chip Select Register 1					SPI_CSR1	Read-write	0x0
-0x38	Chip Select Register 2					SPI_CSR2	Read-write	0x0
-0x3C	Chip Select Register 3					SPI_CSR3	Read-write	0x0
-*/
-
-//MP3-Dekoder VS1053 (CLKI = 36,864 MHz)
-//Dateninterface:
-//max. SCLK = CLKI/4 ≈ 9 MHz;
-//Datenlänge: 8 Bit
-//Kontrollinterface:
-//max. SCLK = CLKI/7 ≈ 5 MHz;
-//Datenlänge: 16 Bit
-//
-//SD-Card:
-//max. SCLK ≈ 1 MHz; (Initialisierung)
-//Datenlänge: 8 Bit
-//max. SCLK ≈ 10 ... > 25 MHz;
-//Datenlänge: 8 Bit
-//
-//Flash-ROM
-//max. SCLK = 13 MHz; SCLK Polarität wählbar
-//Datenlänge: > 16 Bit
-//
-//WLAN-Modul max. SCLK = 3 MHz?
-//Datenlänge: 8 Bit?
-//
-//Digital-Analog-Wandler
-//max. SCLK = 12 MHz
-//Datenlänge: 16 Bit
 
 
 
 
 
 
-// The necessary clock rates as taken from the Datasheets
-	#define SPCK_MP3_DATA  9216000	//  9MHz
-	#define SPCK_MP3_CNTL  5266300	//  5MHz
-	#define SPCK_SD_INIT   1000000	//  1MHz
-	#define SPCK_SD_NRML  20000000	// 20MHz
-	#define SPCK_FLASH    13000000	// 13MHz
-//  #define SPCK_WLAN      3000000	//  3MHz
-	#define SPCK_DAC      12000000	// 12MHz
 
+
+// Configure the SPI port. Call this function before using the SPI port the first time!
 void spi_init();
 
+// Send 8..16 bit of data trough the SPI port.
+// Always check that the SPI port is ready to send before sending, or data loss may occur!
+inline void spi_put(uint32_t data, uint8_t slave_number, uint8_t is_last_transfer);
 
+// This function will return the data, that was received by the last transfer
+// Args:   uint16_t* destination. This is where the received data will be saved to
+// Retval: 0 -> Everything ok,
+//         1-> No new data available,
+//         2..255 -> reserved
+inline uint8_t spi_get(uint16_t* destination);
+
+// This function will return the data, that was received by the last transfer
+// Args:   uint16_t* destination. This is where the received data will be saved to
+// Retval: 0 -> Everything ok,
+//         1-> No new data available,
+//         2 -> Data came from wrong peripheral,
+//         3 -> No new data available and data is from wrong source,
+//         4..255 -> reserved
+inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral);
+
+inline uint8_t spi_is_ready_to_send();
+inline uint8_t spi_receive_data_is_waiting();
+inline uint8_t spi_transmit_buffer_is_empty();
+
+
+// Send 8..16 bit of data trough the SPI port.
+// Always check that the SPI port is ready to send before sending, or data loss may occur!
+// The data length is 8..16 bits, but the variable "data" is 32 bit to avoid a cast (and because it would need to be at least 16 bit anyways...)
+inline void spi_put(uint32_t data, uint8_t slave_number, uint8_t is_last_transfer)
+{
+	// data                : 00000000 00000000 XXXXXXXX YYYYYYYY
+	// slave_number<<16    : 00000000 0000XXXX 00000000 00000000
+	// is_last_transfer<<24: 0000000x 00000000 00000000 00000000
+#define SPI_LASTXFER 24
+#define SPI_PCS      16
+	AT91C_BASE_SPI1->SPI_TDR = (data | (((uint32_t) slave_number) << SPI_PCS) | (is_last_transfer << SPI_LASTXFER));
+}
+
+inline uint8_t spi_receive_data_is_waiting()
+{
+	return AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF;
+}
+
+inline uint8_t spi_transmit_buffer_is_empty()
+{
+	return AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TDRE;
+}
+
+// This function will return the data, that was received by the last transfer
+// Args:   uint16_t* destination. This is where the received data will be saved to
+// Retval: 0 -> Everything ok,
+//         1-> No new data available,
+//         2..255 -> reserved
+inline uint8_t spi_get(uint16_t* destination)
+{
+	uint8_t retval=spi_receive_data_is_waiting();
+	*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
+	return retval;
+}
+
+
+// This function will return the data, that was received by the last transfer
+// Args:   uint16_t* destination. This is where the received data will be saved to
+// Retval: 0 -> Everything ok,
+//         1-> No new data available,
+//         2 -> Data came from wrong peripheral,
+//         3 -> No new data available and data is from wrong source,
+//         4..255 -> reserved
+inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral)
+{
+	uint8_t retval= spi_receive_data_is_waiting(); // check if the data is stale
+	// generate the the peripheral mismatch bit: compare peripherals and shift the resulting 0 or 1 to the left
+	uint8_t peripheral_error = ((((uint8_t) (AT91C_BASE_SPI1->SPI_RDR >> 16)) == peripheral)<<1);
+	retval |= peripheral_error; // "add" both errors
+	*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
+	return retval;
+}
+
+inline uint8_t spi_is_ready_to_send()
+{   //      check if no received data is waiting	     and if the transmit register is free (last data has been sent completely)
+	return !(AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) && (AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TDRE);
+}
 
 
 

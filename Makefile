@@ -85,6 +85,7 @@ SRC += common/cstartup.c
 SRC += common/syscalls.c
 SRC += common/board.c
 SRC += dbgu.c
+SRC += devices/spi/spi.c
 #SRC += sdram.c
 
 
@@ -136,7 +137,7 @@ NOTRACES = 0
 
 # List any extra directories to look for include files here.
 #     Each directory must be seperated by a space.
-EXTRAINCDIRS = common devices/dbgu stack disks fat lcd
+EXTRAINCDIRS = common devices/dbgu devices/spi stack disks fat lcd
 
 # List any extra directories to look for library files here.
 #     Each directory must be seperated by a space.

@@ -13,6 +13,7 @@
 
 #include <dbgu.h>
 
+#include "spi.h"
 
 #define LED_A          AT91C_PIO_PB3
 #define LED_B          AT91C_PIO_PC18
@@ -162,6 +163,7 @@ int main(void)
             leds_off();
     }
 	
+	spi_init();
 	return 0;
 }
 
