@@ -76,17 +76,114 @@
 
 // SCI_STATUS (RW) mapping:
 
-Name                Bits     Describtion
-SS_DO_NOT_JUMP      15       Header in decode, do not fast forward/rewind
-SS_SWING            14:12    Set swing to +0dB, +0.5dB, ..., or +3.5dB
-SS_VCM_OVERLORD     11       GBUF overload indicator '1' = overload
-SS_VCM_DISAbLE      10       GBUF overload detection '1' = disev
+//Name                                      Bits    Describtion
+#define SS_DO_NOT_JUMP           15//       15      Header in decode, do not fast forward/rewind
+#define SS_SWING                 12//       14:12   Set swing to +0dB, +0.5dB, ..., or +3.5dB
+#define SS_VCM_OVERLORD          11//       11      GBUF overload indicator '1' = overload
+#define SS_VCM_DISAbLE           10//       10      GBUF overload detection '1' = disev
 // reserved
-SS_VER              7:4      Version
-SS_APDOWN2           3       Analog driver powerdown
-SS_APDOWN1           2       Analog internal powerdown
-SS_AD_CLOCK         1   AD clock select, '0' = 6MHz, '1' = 3MHz
-SS_REFERENCE_SEL    0        Reference voltage selection, '0' = 1.23V, '1'=1.65V
+#define SS_VER                   4//        7:4     Version
+#define SS_APDOWN2               3//        3       Analog driver powerdown
+#define SS_APDOWN1               2//        2       Analog internal powerdown
+#define SS_AD_CLOCK              1//        1       AD clock select, '0' = 6MHz, '1' = 3MHz
+#define SS_REFERENCE_SEL         0//        0       Reference voltage selection, '0' = 1.23V, '1'=1.65V
+
+// SCI BASS (RW) mapping:
+#define ST AMPLITUDE             12//       15:12   Treble Control in 1.5 dB steps (-8..7, 0 = off)
+#define ST FREQLIMIT             8//        11:8    Lower limit frequency in 1000 Hz steps (1..15)
+#define SB AMPLITUDE             4//        7:4     Bass Enhancement in 1 dB steps (0..15, 0 = off)
+#define SB FREQLIMIT             0//        3:0     Lower limit frequency in 10 Hz steps (2..15)
+
+// SCI CLOCKF (RW) mapping:
+#define SC MULT                  13//       15:13   Clock multiplier
+#define SC ADD                   11//       12:11   Allowed multiplier addition
+#define SC FREQ                   0//       10: 0   Clock frequency
+
+// Possible values for SC_MULT:
+//                                   MASK      SC MULT       CLKI
+#define SC_MULT_XTALI_times_1_0      0x0000//  0             XTALI
+#define SC_MULT_XTALI_times_2_0      0x2000//  1             XTALI×2.0
+#define SC_MULT_XTALI_times_2_5      0x4000//  2             XTALI×2.5
+#define SC_MULT_XTALI_times_3_0      0x6000//  3             XTALI×3.0
+#define SC_MULT_XTALI_times_3_5      0x8000//  4             XTALI×3.5
+#define SC_MULT_XTALI_times_4_0      0xa000//  5             XTALI×4.0
+#define SC_MULT_XTALI_times_4_5      0xc000//  6             XTALI×4.5
+#define SC_MULT_XTALI_times_5_0      0xe000//  7             XTALI×5.0
+
+// Possible Values for SC_ADD:
+//                                   MASK  //  SC ADD        Multiplier addition
+#define SC_ADD_0_0                   0x0000//  0             No modification is allowed
+#define SC_ADD_1_0                   0x0800//  1             1.0×
+#define SC_ADD_1_5                   0x1000//  2             1.5×
+#define SC_ADD_2_0                   0x1800//  3             2.0×
+
+
+
+
+
+//      SCI WRAMADDR (W) mapping:
+// SM WRAMADDR       Dest. addr.      Bits/       Description
+// Start..End        Start.. End      Word
+// 0x1800..0x18XX    0x1800..0x18XX   16          X data RAM
+// 0x5800..0x58XX    0x1800..0x18XX   16          Y data RAM
+// 0x8040..0x84FF    0x0040..0x04FF   32          Instruction RAM
+// 0xC000..0xFFFF    0xC000..0xFFFF   16          I/O
+
+
+
+// SCI HDAT0 and SCI HDAT1 (R)
+
+//Bit Function Value Explanation
+//HDAT1[15:5]   syncword          2047       stream valid
+//HDAT1[4:3]    ID                3          ISO 11172-3 MPG 1.0
+//                                2          ISO 13818-3 MPG 2.0 (1/2-rate)
+//                                1          MPG 2.5 (1/4-rate)
+//                                0          MPG 2.5 (1/4-rate)
+//HDAT1[2:1]    layer             3          I
+//                                2          II
+//                                1          III
+//                                0          reserved
+//HDAT1[0]      protect bit       1          No CRC
+//                                0          CRC protected
+//HDAT0[15:12]  bitrate                      see bitrate table
+//HDAT0[11:10]  samplerate        3          reserved
+//                                2          32/16/ 8 kHz
+//                                1          48/24/12 kHz
+//                                0          44/22/11 kHz
+//HDAT0[9]      pad bit           1          additional slot
+//                                0          normal frame
+//HDAT0[8]      private bit                  not defined
+//HDAT0[7:6]    mode              3          mono
+//                                2          dual channel
+//                                1          joint stereo
+//                                0          stereo
+//HDAT0[5:4]    extension                    see ISO 11172-3
+//HDAT0[3]      copyright         1          copyrighted
+//                                0          free
+//HDAT0[2]      original          1          original
+//                                0          copy
+//HDAT0[1:0]    emphasis          3          CCITT J.17
+//                                2          reserved
+//                                1          50/15 microsec
+//                                0          none
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
