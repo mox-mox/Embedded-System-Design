@@ -3,6 +3,13 @@
 *.ko
 *.obj
 *.elf
+*.lst
+*.lss
+*.map
+*.dep
+*.sym
+
+*.bin
 
 # Libraries
 *.lib
@@ -24,3 +31,5 @@
 
 # CStags files
 tags
+
+.flagged
