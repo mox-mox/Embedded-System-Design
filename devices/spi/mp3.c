@@ -26,21 +26,38 @@ static inline uint8_t mp3_is_ready()
 
 
 
-uint8_t mp3_read(uint8_t adress, uint16_t* data)
+uint16_t mp3_read(uint8_t adress)
 {
+	printf("foo\n");
 	while(mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
-	spi_put(SPI_MP3_CTRL, VS1053_READ, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
-	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
-	spi_put(SPI_MP3_CTRL, VOID_DATA, LAST_TRANSFER);		// "Wait" to receive the data
-	return spi_get_checked(data, SPI_MP3_DATA);				// Return received data with error checking
+	printf("bar\n");
+	spi_transmit(SPI_MP3_CTRL, VS1053_READ | adress, CONTINUE);
+	printf("foobar\n");
+	return spi_transmit(SPI_MP3_CTRL, VOID_DATA, LAST_TRANSFER);
 }
+
+
+
+
+
+
+//	spi_put(SPI_MP3_CTRL, VS1053_READ, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
+//	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
+//	spi_put(SPI_MP3_CTRL, VOID_DATA, LAST_TRANSFER);		// "Wait" to receive the data
+//	return spi_get_checked(data, SPI_MP3_DATA);				// Return received data with error checking
+//}
 
 void mp3_write(uint8_t adress, uint16_t data)
 {
 	while(mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
-	spi_put(SPI_MP3_CTRL, VS1053_WRITE, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
-	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
-	spi_put(SPI_MP3_CTRL, data, LAST_TRANSFER);				// "Wait" to receive the data
+	spi_transmit(SPI_MP3_CTRL, VS1053_WRITE | adress, CONTINUE);
+	spi_transmit(SPI_MP3_CTRL, data, LAST_TRANSFER);
 }
+
+
+//	spi_put(SPI_MP3_CTRL, VS1053_WRITE, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
+//	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
+//	spi_put(SPI_MP3_CTRL, data, LAST_TRANSFER);				// "Wait" to receive the data
+//}
 
 

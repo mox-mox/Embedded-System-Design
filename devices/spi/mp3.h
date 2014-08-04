@@ -1,5 +1,5 @@
-#ifndef MP3_H_
-#define MP3_H_
+#ifndef MP3_H
+#define MP3_H
 
 #include <stdint.h>
 
@@ -15,8 +15,8 @@
 #define MP3_DREQ AT91C_PIO_PB9
 
 // VS1053 Instructions
-#define VS1053_READ  0x3 // Read data
-#define VS1053_WRITE 0x2 // Write data
+#define VS1053_READ  0x0300 // Read data
+#define VS1053_WRITE 0x0200 // Write data
 
 
 //{{{
@@ -180,7 +180,7 @@ void mp3_init();
 
 
 
-uint8_t mp3_read(uint8_t adress, uint16_t* data);
+uint16_t mp3_read(uint8_t adress);
 void mp3_write(uint8_t adress, uint16_t data);
 
 
@@ -188,14 +188,4 @@ void mp3_write(uint8_t adress, uint16_t data);
 
 
 
-
-
-;
-
-
-
-
-
-
-
-#endif /*MP3_H_*/
+#endif /*MP3_H*/

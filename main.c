@@ -13,7 +13,7 @@
 
 #include <dbgu.h>
 
-#include "spi.h"
+//#include "spi.h"
 #include "mp3.h"
 
 #define LED_A          AT91C_PIO_PB3
@@ -143,6 +143,7 @@ int main(void)
 	//sdram_init();
 
 
+	delayms(400);
 	mp3_init();
 
 	uint16_t counter;
@@ -169,13 +170,15 @@ int main(void)
 
 
 		printf("\nTry reading the volume data from the mp3 decoder VS1053:\n...\n");
-		uint16_t volume;
-		uint8_t errno;
-		if((errno=mp3_read(VS1053_VOL, &volume)))
-			printf("There was error reading the volume: %i\n...Flee You FOOLS!!...\n", errno);
-		else
-			printf("The read volume is %i\n", volume);
+		//uint16_t volume;
+		//uint8_t errno;
+		//if((errno=mp3_read(VS1053_VOL, &volume)))
+		//	printf("There was error reading the volume: %i\n...Flee You FOOLS!!...\n", errno);
+		//else
+		//	printf("The read volume is %i\n", volume);
 
+		uint16_t volume = mp3_read(VS1053_VOL);
+		printf("The read volume is %i\n", volume);
 
 		printf("Try writing a new volume to the mp3 decoder VS1053:\n...\n");
 		mp3_write(VS1053_VOL, counter);

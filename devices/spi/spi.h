@@ -1,5 +1,5 @@
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef SPI_H
+#define SPI_H
 #include <stdint.h>
 #include <AT91SAM9XE512.h>
 
@@ -44,9 +44,9 @@ void spi_init();
 
 
 #define LAST_TRANSFER 1
-#define NOT_LAST_TRANSFER 0
+#define CONTINUE 0
 #define VOID_DATA 0 // Data to transmit, when when only receiving is required
-uint16_t in_data spi_transmit(uint8_t slave_number, uint32_t out_data, uint8_t is_last_transfer);
+uint16_t spi_transmit(uint8_t slave_number, uint32_t out_data, uint8_t is_last_transfer);
 
 
 
@@ -58,7 +58,7 @@ void set_en_spi();
 void clear_en_spi();
 
 // flag, that indicats whether the spi port has already been initialised
-uint8_t spi_is_initialised=0;
+uint8_t spi_is_initialised;
 
 
 
