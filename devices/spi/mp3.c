@@ -12,14 +12,13 @@
 void mp3_init()
 {
 	AT91F_PIO_CfgInput(AT91C_BASE_PIOB, MP3_DREQ); // Make MP3_DREQ an input. The MP3 decoder raises this signal when it is ready to receive new data.
+	AT91F_PIO_CfgOutput(AT91C_BASE_PIOA, EN_SPI);   // Make EN_SPI an output
 }
 
 
 static inline uint8_t mp3_is_ready()
 {
-	//return (AT91F_PIO_GetInput(AT91C_BASE_PIOB) & MP3_DREQ);
-	//printf("mp3_is_ready()");
-	return !AT91F_PIO_IsInputSet(AT91C_BASE_PIOB, MP3_DREQ);
+	return (!(AT91F_PIO_IsInputSet(AT91C_BASE_PIOB, MP3_DREQ)));
 }
 
 
@@ -27,21 +26,16 @@ static inline uint8_t mp3_is_ready()
 
 uint8_t mp3_read(uint8_t adress, uint16_t* data)
 {
-	//printf("read1");
-	while(!mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
-	//printf("read2");
+	while(mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
 	spi_put(SPI_MP3_CTRL, VS1053_READ, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
-	//printf("read3");
 	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
-	//printf("read4");
 	spi_put(SPI_MP3_DATA, VOID_DATA, LAST_TRANSFER);		// "Wait" to receive the data
-	//printf("read5");
 	return spi_get_checked(data, SPI_MP3_DATA);				// Return received data with error checking
 }
 
 void mp3_write(uint8_t adress, uint16_t data)
 {
-	while(!mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
+	while(mp3_is_ready()); // Wait until the decoder is ready to receive a new register transfer
 	spi_put(SPI_MP3_CTRL, VS1053_WRITE, NOT_LAST_TRANSFER);	// Tell the decoder we want to read a register
 	spi_put(SPI_MP3_CTRL, adress, NOT_LAST_TRANSFER);		// Tell the decoder which register we want to read
 	spi_put(SPI_MP3_DATA, data, LAST_TRANSFER);				// "Wait" to receive the data

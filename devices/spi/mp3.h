@@ -13,6 +13,7 @@
 
 
 #define MP3_DREQ AT91C_PIO_PB9
+#define EN_SPI   AT91C_PIO_PA26
 
 // VS1053 Instructions
 #define VS1053_READ  0x3 // Read data
