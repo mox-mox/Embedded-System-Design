@@ -143,7 +143,7 @@ int main(void)
 	//sdram_init();
 
 
-	spi_init();
+	mp3_init();
 
 	uint16_t counter;
 	for(counter=0; true; counter++)

@@ -38,111 +38,121 @@
 
 //}}}
 
-//{{{
-/* Adress decoding table:
- * //NPCS2 is unused
- * NPCS3	NPCS1	NPCS0
- * 0		0		0			/LDAC
- * 0		0		1           Select_SPI_MP3_Control (VS1053)
- * 0		1		0           Select_SPI_MP3_Data (VS1053)
- * 0		1		1			--
- * 1		0		0			Select_SPI_FLASH_RAM
- * 1		0		1       	Select_SPI_WLAN
- * 1		1		0       	Select_SPI_DAC
- * 1		1		1       	Select_SPI_MP3_MMC
- */
-
-//}}}
 
 // Configure the SPI port. Call this function before using the SPI port the first time!
 void spi_init();
 
+
 #define LAST_TRANSFER 1
 #define NOT_LAST_TRANSFER 0
 #define VOID_DATA 0 // Data to transmit, when when only receiving is required
-
-// Send 8..16 bit of data trough the SPI port.
-// Always check that the SPI port is ready to send before sending, or data loss may occur!
-inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer);
-
-// This function will return the data, that was received by the last transfer
-// Args:   uint16_t* destination. This is where the received data will be saved to
-// Retval: 0 -> Everything ok,
-//         1-> No new data available,
-//         2..255 -> reserved
-inline uint8_t spi_get(uint16_t* destination);
-
-// This function will return the data, that was received by the last transfer
-// Args:   uint16_t* destination. This is where the received data will be saved to
-// Retval: 0 -> Everything ok,
-//         1-> No new data available,
-//         2 -> Data came from wrong peripheral,
-//         3 -> No new data available and data is from wrong source,
-//         4..255 -> reserved
-inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral);
-
-inline uint8_t spi_is_ready_to_send();
-inline uint8_t spi_receive_data_is_waiting();
-inline uint8_t spi_transmit_buffer_is_empty();
+uint16_t in_data spi_transmit(uint8_t slave_number, uint32_t out_data, uint8_t is_last_transfer);
 
 
-// Send 8..16 bit of data trough the SPI port.
-// Always check that the SPI port is ready to send before sending, or data loss may occur!
-// The data length is 8..16 bits, but the variable "data" is 32 bit to avoid a cast (and because it would need to be at least 16 bit anyways...)
-inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer)
-{
-	// data                : 00000000 00000000 XXXXXXXX YYYYYYYY
-	// slave_number<<16    : 00000000 0000XXXX 00000000 00000000
-	// is_last_transfer<<24: 0000000x 00000000 00000000 00000000
-#define SPI_LASTXFER 24
-#define SPI_PCS      16
-	AT91C_BASE_SPI1->SPI_TDR = (data | (((uint32_t) slave_number) << SPI_PCS) | (is_last_transfer << SPI_LASTXFER));
-}
 
-inline uint8_t spi_receive_data_is_waiting()
-{
-	return AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF;
-}
-
-inline uint8_t spi_transmit_buffer_is_empty()
-{
-	return AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TDRE;
-}
-
-// This function will return the data, that was received by the last transfer
-// Args:   uint16_t* destination. This is where the received data will be saved to
-// Retval: 0 -> Everything ok,
-//         1-> No new data available,
-//         2..255 -> reserved
-inline uint8_t spi_get(uint16_t* destination)
-{
-	uint8_t retval=spi_receive_data_is_waiting();
-	*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
-	return retval;
-}
+uint8_t spi_is_ready_to_send();
 
 
-// This function will return the data, that was received by the last transfer
-// Args:   uint16_t* destination. This is where the received data will be saved to
-// Retval: 0 -> Everything ok,
-//         1-> No new data available,
-//         2 -> Data came from wrong peripheral,
-//         3 -> No new data available and data is from wrong source,
-//         4..255 -> reserved
-inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral)
-{
-	uint8_t retval= spi_receive_data_is_waiting(); // check if the data is stale
-	// generate the the peripheral mismatch bit: compare peripherals and shift the resulting 0 or 1 to the left
-	uint8_t peripheral_error = ((((uint8_t) (AT91C_BASE_SPI1->SPI_RDR >> 16)) == peripheral)<<1);
-	retval |= peripheral_error; // "add" both errors
-	*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
-	return retval;
-}
+void set_en_spi();
 
-inline uint8_t spi_is_ready_to_send()
-{   //      check if no received data is waiting	     and if the transmit register is free (last data has been sent completely)
-	return !(AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) && (AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TDRE);
-}
+void clear_en_spi();
+
+// flag, that indicats whether the spi port has already been initialised
+uint8_t spi_is_initialised=0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+//{{{
+
+//		
+//		// Send 8..16 bit of data trough the SPI port.
+//		// Always check that the SPI port is ready to send before sending, or data loss may occur!
+//		inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer);
+//		
+//		//{{{
+//		//
+//		// This function will return the data, that was received by the last transfer
+//		// Args:   uint16_t* destination. This is where the received data will be saved to
+//		// Retval: 0 -> Everything ok,
+//		//         1-> No new data available,
+//		//         2..255 -> reserved
+//		//}}}
+//		inline uint8_t spi_get(uint16_t* destination);
+//		
+//		// This function will return the data, that was received by the last transfer
+//		// Args:   uint16_t* destination. This is where the received data will be saved to
+//		// Retval: 0 -> Everything ok,
+//		//         1-> No new data available,
+//		//         2 -> Data came from wrong peripheral,
+//		//         3 -> No new data available and data is from wrong source,
+//		//         4..255 -> reserved
+//		inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral);
+//		
+//		inline uint8_t spi_is_ready_to_send();
+//		inline uint8_t spi_receive_data_is_waiting();
+//		inline uint8_t spi_transmit_buffer_is_empty();
+//		
+//		
+//		// Send 8..16 bit of data trough the SPI port.
+//		// Always check that the SPI port is ready to send before sending, or data loss may occur!
+//		// The data length is 8..16 bits, but the variable "data" is 32 bit to avoid a cast (and because it would need to be at least 16 bit anyways...)
+//		inline void spi_put(uint8_t slave_number, uint32_t data, uint8_t is_last_transfer)
+//		{
+//			// data                : 00000000 00000000 XXXXXXXX YYYYYYYY
+//			// slave_number<<16    : 00000000 0000XXXX 00000000 00000000
+//			// is_last_transfer<<24: 0000000x 00000000 00000000 00000000
+//		#define SPI_LASTXFER 24
+//		#define SPI_PCS      16
+//			AT91C_BASE_SPI1->SPI_TDR = (data | (((uint32_t) slave_number) << SPI_PCS) | (is_last_transfer << SPI_LASTXFER));
+//		}
+//		
+//		inline uint8_t spi_receive_data_is_waiting()
+//		{
+//			return AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF;
+//		}
+//		
+//		
+//		// This function will return the data, that was received by the last transfer
+//		// Args:   uint16_t* destination. This is where the received data will be saved to
+//		// Retval: 0 -> Everything ok,
+//		//         1-> No new data available,
+//		//         2..255 -> reserved
+//		inline uint8_t spi_get(uint16_t* destination)
+//		{
+//			uint8_t retval=spi_receive_data_is_waiting();
+//			*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
+//			return retval;
+//		}
+//		
+//		
+//		// This function will return the data, that was received by the last transfer
+//		// Args:   uint16_t* destination. This is where the received data will be saved to
+//		// Retval: 0 -> Everything ok,
+//		//         1-> No new data available,
+//		//         2 -> Data came from wrong peripheral,
+//		//         3 -> No new data available and data is from wrong source,
+//		//         4..255 -> reserved
+//		inline uint8_t spi_get_checked(uint16_t* destination, uint8_t peripheral)
+//		{
+//			uint8_t retval= spi_receive_data_is_waiting(); // check if the data is stale
+//			// generate the the peripheral mismatch bit: compare peripherals and shift the resulting 0 or 1 to the left
+//			uint8_t peripheral_error = ((((uint8_t) (AT91C_BASE_SPI1->SPI_RDR >> 16)) == peripheral)<<1);
+//			retval |= peripheral_error; // "add" both errors
+//			*destination=(uint16_t) (AT91C_BASE_SPI1->SPI_RDR && 0xFFFF);
+//			return retval;
+//		}
+
+//}}}
 
 
 
